@@ -696,6 +696,27 @@
         "wholemsg": "false"
     },
     {
+        "id": "2fdc51cf.f4e8ce",
+        "type": "mqtt-broker",
+        "name": "Cloud MQTT",
+        "broker": "hip-lifeguard.cloudmqtt.com",
+        "port": "1883",
+        "clientid": "blinky-solar-box-01",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
         "id": "d8aea031.7f89d",
         "type": "http in",
         "z": "dc20c6e0.0feb98",
@@ -4862,7 +4883,7 @@
         "fieldType": "msg",
         "format": "html",
         "syntax": "mustache",
-        "template": "Blinky Solar System",
+        "template": "Solar System",
         "output": "str",
         "x": 320,
         "y": 100,
@@ -8015,7 +8036,7 @@
         "payload": "",
         "payloadType": "date",
         "x": 170,
-        "y": 380,
+        "y": 460,
         "wires": [
             [
                 "1f87d023.a8c68"
@@ -8033,7 +8054,7 @@
         "initialize": "",
         "finalize": "",
         "x": 360,
-        "y": 380,
+        "y": 460,
         "wires": [
             [
                 "7360c8a7.1c1578"
@@ -8050,7 +8071,7 @@
         "collection": "devices",
         "operation": "findOne",
         "x": 590,
-        "y": 380,
+        "y": 460,
         "wires": [
             [
                 "8a8fe53c.af1518"
@@ -8068,7 +8089,7 @@
         "initialize": "",
         "finalize": "",
         "x": 860,
-        "y": 380,
+        "y": 460,
         "wires": [
             []
         ]
@@ -8161,7 +8182,8 @@
         "y": 640,
         "wires": [
             [
-                "806b6fd.24aec9"
+                "806b6fd.24aec9",
+                "d74b2890.9ea5e8"
             ]
         ]
     },
@@ -8257,7 +8279,7 @@
         "datatype": "auto",
         "broker": "84d80994.260508",
         "x": 230,
-        "y": 320,
+        "y": 400,
         "wires": [
             [
                 "d779f110.192b2"
@@ -8270,118 +8292,10 @@
         "z": "65fcd63c.d7aa68",
         "name": "",
         "x": 570,
-        "y": 320,
+        "y": 400,
         "wires": [
             [
                 "8fb02a40.ed32d8"
-            ]
-        ]
-    },
-    {
-        "id": "719d8c2a.03ef54",
-        "type": "template",
-        "z": "9c854ea3.68416",
-        "name": "body",
-        "field": "payload.body",
-        "fieldType": "msg",
-        "format": "html",
-        "syntax": "mustache",
-        "template": "<!-- Body HTML -->\n    <div width=\"100%\">\n        <div class='row' style='padding-bottom: 25px;'>\n            <div class='col-md-12' align='center'>\n{{{payload.html.dashboard}}}\n            </div>\n        </div>\n        <div class='row' style='padding-bottom: 25px;'>\n            <div class='col-md-12' align='center'>\n{{{payload.html.state}}}\n            </div>\n        </div>\n        <div class='row' style='padding-bottom: 25px;'>\n            <div class='col-md-12' align='center'>\n{{{payload.html.archive}}}\n            </div>\n        </div>\n    </div>\n    \n    ",
-        "output": "str",
-        "x": 910,
-        "y": 1740,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "1fea6258.ed088e",
-        "type": "template",
-        "z": "9c854ea3.68416",
-        "name": "script.global",
-        "field": "payload.script.global",
-        "fieldType": "msg",
-        "format": "javascript",
-        "syntax": "mustache",
-        "template": "// Global Javascript\n        var restfulDevice = \n        {\n            deviceType  : '{{{payload.script.deviceType}}}',\n            name        : '{{{payload.script.name}}}'\n        };\n        var mqttDevice = null;\n        var device = null;\n        var plotConfig = \n        {\n            trace1Title : 'Panel',\n            trace2Title : 'Outside',\n            trace3Title : 'Tank Bottom',\n            trace4Title : 'Tank Top',\n            trace5Title : 'Downstairs',\n            trace6Title : 'Upstairs',\n            trace7Title : 'Degree Days',\n            trace1Color : 'red',\n            trace2Color : 'green',\n            trace3Color : 'blue',\n            trace4Color : 'magenta',\n            trace5Color : 'cyan',\n            trace6Color : 'purple',\n            trace7Color : 'orange',\n            axis1Title : 'Temperature (C)',\n            axis2Title : 'Degree Days',\n            axis1TitleColor : '#557a95',\n            axis2TitleColor : '#f2a31f',\n            axis1GridColor : '#beceda',\n            axis2GridColor : '#f8d8a0',\n            plotLength  : 600,\n            width   : '',\n            height  :   '500',\n            htmlId  :   'historyChart'\n        };\n//        let historyChart = new StripChart(plotConfig);\n        var changingState = false;\n        var regTempUpChanged = false;\n        var regTempDnChanged = false;\n\n        var archiveRequestList = [];\n        var archiveList = [];\n\n        useWebSockets(true);\n        function onDocumentReady()\n        {\n            $('#regTempUpButtonId').hide();\n            $('#regTempDnButtonId').hide();\n            $('#waitForArchiveMessage').hide();\n        }\n        function onWebSocketOpen()\n        {\n            getArchive(24);\n        }\n        function onWebSocketClose()\n        {\n\n        }\n        function onWebSocketMessage(msg)\n        {\n            switch(msg.topic)\n            {\n                case 'readings':\n                    if (msg.mqttDevice.name == restfulDevice.name)\n                    {\n                        device = msg.payload;\n                        mqttDevice = msg.mqttDevice;\n                        updateDmaReadings();\n                    }\n                    break;\n                case 'getArchiveValues':\n                    if (msg.userID == userID)\n                    {\n                        if ((msg.payload.device.deviceType == restfulDevice.deviceType) && (msg.payload.device.name == restfulDevice.name) )\n                            putArchiveValues(msg.payload);\n                    }\n                    break;\n                case 'getJwtToken':\n                    if (msg.userID == userID) loadJwtToken(msg);\n                    break;\n                case 'settingAcknowledge':\n                    if (msg.userID == userID)\n                    {\n                        if (msg.payload != 'Success!') acknowledgeDialog('Acknowledge', 'Setting', msg.payload);\n                    }\n                    break;\n                default:\n                // code block\n            }\n        }\n",
-        "output": "str",
-        "x": 650,
-        "y": 1620,
-        "wires": [
-            [
-                "ae7b2954.7c8618"
-            ]
-        ]
-    },
-    {
-        "id": "ae7b2954.7c8618",
-        "type": "template",
-        "z": "9c854ea3.68416",
-        "name": "script.deviceReadings",
-        "field": "payload.script.deviceReadings",
-        "fieldType": "msg",
-        "format": "javascript",
-        "syntax": "mustache",
-        "template": "// Update Readings Javascript\n       function updateDmaReadings()\n       {\n            var tempA01 = Math.round(100 * device.tankBotT.value) / 100;\n            var tempB01 = Math.round(100 * device.tankTopT.value) / 100;\n            var tempA02 = Math.round(100 * device.panelT.value) / 100;\n            var tempB02 = Math.round(100 * device.outsideT.value) / 100;\n            var tempA03 = Math.round(100 * device.downstairsT.value) / 100;\n            var tempB03 = Math.round(100 * device.upstairsT.value) / 100;\n            var diffTemp = Math.round(100 * device.deltaT.value) / 100;\n            var degreeDays = device.degreeDays.value;\n\n            $('#tempA01Id').text(tempA01.toString() + ' C');\n            $('#tempB01Id').text(tempB01.toString() + ' C');\n            $('#tempA02Id').text(tempA02.toString() + ' C');\n            $('#tempB02Id').text(tempB02.toString() + ' C');\n            $('#tempA03Id').text(tempA03.toString() + ' C');\n            $('#tempB03Id').text(tempB03.toString() + ' C');\n            $('#diffTempId').text(diffTemp.toString() + ' C');\n            $('#degreeDaysId').text(degreeDays.toString());\n            \n            var pumpStatus = 'Off';\n            var pumpStatusColor = 'white';\n\n            if (device.pumpStatus.value > 0)\n            {\n                pumpStatus = 'On';\n                pumpStatusColor = 'red';\n            }\n            $('#pumpStatusId').text(pumpStatus);\n            $('#pumpPowerId').text(device.pumpPower.value.toString() + ' W');\n            $('#pumpStatusId').css('color', pumpStatusColor); \n            $('#pumpPowerId').css('color', pumpStatusColor); \n//            historyChart.addTracePoints(tempA02, tempB02, tempA01, tempB01, diffTemp);\n\n            if (!changingState)\n            {\n                switch(device.regState.value) \n                {\n                  case 0:\n                    $('#offStateButton').css(\"background-color\", \"green\");\n                    $('#regulateStateButton').css(\"background-color\", \"white\");\n                    $('#onStateButton').css(\"background-color\", \"white\");\n                    break;\n                  case 1:\n                    // code block\n                    $('#offStateButton').css(\"background-color\", \"white\");\n                    $('#regulateStateButton').css(\"background-color\", \"yellow\");\n                    $('#onStateButton').css(\"background-color\", \"white\");\n                    break;\n                  case 2:\n                    // code block\n                    $('#offStateButton').css(\"background-color\", \"white\");\n                    $('#regulateStateButton').css(\"background-color\", \"white\");\n                    $('#onStateButton').css(\"background-color\", \"red\");\n                    break;\n                  default:\n                    // code block\n                    $('#offStateButton').css(\"background-color\", \"grey\");\n                    $('#regulateStateButton').css(\"background-color\", \"grey\");\n                    $('#onStateButton').css(\"background-color\", \"grey\");\n                }            \n                \n            }\n            if (!regTempUpChanged)\n            {\n                $('#regTempUpInputId').val(device.regTup.value);\n            }\n            if (!regTempDnChanged)\n            {\n                $('#regTempDnInputId').val(device.regTdn.value);\n            }\n\n\n       }\n",
-        "output": "str",
-        "x": 680,
-        "y": 1660,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "da4834d7.d80638",
-        "type": "template",
-        "z": "9c854ea3.68416",
-        "name": "script.archive",
-        "field": "payload.script.archive",
-        "fieldType": "msg",
-        "format": "javascript",
-        "syntax": "mustache",
-        "template": "// Archive JavaScript\n        function getArchive(hours)\n        { \n            $('#waitForArchiveMessage').show();\n            $('#archive2hrButton').attr(\"disabled\", true); \n            $('#archive4hrButton').attr(\"disabled\", true); \n            $('#archive8hrButton').attr(\"disabled\", true); \n            $('#archive24hrButton').attr(\"disabled\", true); \n            $('#archive72hrButton').attr(\"disabled\", true); \n            $('#archive168hrButton').attr(\"disabled\", true); \n            $('#archive2hrButton').css('color', 'var(--color5)'); \n            $('#archive2hrButton').css('background-color', 'var(--color1)'); \n            $('#archive4hrButton').css('color', 'var(--color5)'); \n            $('#archive4hrButton').css('background-color', 'var(--color1)'); \n            $('#archive8hrButton').css('color', 'var(--color5)'); \n            $('#archive8hrButton').css('background-color', 'var(--color1)'); \n            $('#archive24hrButton').css('color', 'var(--color5)'); \n            $('#archive24hrButton').css('background-color', 'var(--color1)'); \n            $('#archive72hrButton').css('color', 'var(--color5)'); \n            $('#archive72hrButton').css('background-color', 'var(--color1)'); \n            $('#archive168hrButton').css('color', 'var(--color5)'); \n            $('#archive168hrButton').css('background-color', 'var(--color1)'); \n            switch(hours)\n            {\n                case 2:\n                    $('#archive2hrButton').css('color', 'var(--color1)'); \n                    $('#archive2hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 4:\n                    $('#archive4hrButton').css('color', 'var(--color1)'); \n                    $('#archive4hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 8:\n                    $('#archive8hrButton').css('color', 'var(--color1)'); \n                    $('#archive8hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 24:\n                    $('#archive24hrButton').css('color', 'var(--color1)'); \n                    $('#archive24hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 72:\n                    $('#archive72hrButton').css('color', 'var(--color1)'); \n                    $('#archive72hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                case 168:\n                    $('#archive168hrButton').css('color', 'var(--color1)'); \n                    $('#archive168hrButton').css('background-color', 'var(--color5)'); \n                    break;\n                default:\n                // code block\n            }\n//            historyChart.addTracePoints(tempA02, tempB02, tempA01, tempB01, diffTemp);\n\n            archiveRequestList = [];\n            archiveList = [];\n            var stopDate = new Date().getTime();\n            var startDate = stopDate - hours * 3600000;\n            archiveRequestList[0] = \n            {\n                deviceType : restfulDevice.deviceType,\n                name : restfulDevice.name, \n                attr : ['panelT','outsideT','tankBotT','tankTopT','downstairsT','upstairsT','degreeDays'],\n                startDate: startDate, \n                stopDate: stopDate,\n            };\n            getArchiveValues();\n        }\n        function getArchiveValues()\n        {\n            sendWebSocketMessageObject(\n                {\n                    topic       : 'getArchive',\n                    userID      : userID,\n                    device      : archiveRequestList[0],\n                 });\n            archiveRequestList.shift();\n            return;\n        }\n        function putArchiveValues(data)\n        {\n            archiveList.push(data);\n            if (archiveRequestList.length > 0)\n            {\n                getArchiveValues();\n            }\n            else\n            {\n                plotArchive();\n            }\n        }\n\n        function plotArchive()\n        {\n            //$( \"#messageDialog\" ).dialog( \"close\" );\n            $('#waitForArchiveMessage').hide();\n            var layout =\n            {\n                showlegend  : true,\n                legend      : { x: 0, y: 1.15},\n                height      : '500',\n                width       : '',\n                xaxis       :\n                {\n                    title: 'Hours since ' + new Date(archiveList[0].device.stopDate).toLocaleString(),\n                },\n                yaxis:\n                {\n                    title           : plotConfig.axis1Title,\n                    titlefont       : {color: plotConfig.axis1TitleColor},\n                    tickfont        : {color:plotConfig.axis1TitleColor},\n                    gridcolor       : plotConfig.axis1GridColor,\n                    zerolinecolor   : plotConfig.axis1GridColor,\n                    linecolor       : plotConfig.axis1GridColor,\n\n                },\n                yaxis2:\n                {\n                    title           : plotConfig.axis2Title,\n                    titlefont       : {color: plotConfig.axis2TitleColor},\n                    tickfont        : {color:plotConfig.axis2TitleColor},\n                    gridcolor       : plotConfig.axis2GridColor,\n                    zerolinecolor   : plotConfig.axis2GridColor,\n                    linecolor       : plotConfig.axis2GridColor,\n                    overlaying: 'y',\n                    side: 'right',\n                },\n                margin: \n                    {\n                        t: 30, //top margin\n    //                    l: 0, //left margin\n    //                    r: 0, //right margin\n    //                    b: 20 //bottom margin\n                    },\n            };\n            var traces = [];\n            traces[0] = \n            {\n                x: [],\n                y: [],\n                name: 'Panel Temp',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'red'}\n        \n            };\n            traces[1] = \n            {\n                x: [],\n                y: [],\n                name: 'Outside Temp',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'blue'}\n        \n            };\n            traces[2] = \n            {\n                x: [],\n                y: [],\n                name: 'Tank Bottom Temp',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'green'}\n        \n            };\n            traces[3] = \n            {\n                x: [],\n                y: [],\n                name: 'Tank Top Temp',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'magenta'}\n        \n            };\n            traces[4] = \n            {\n                x: [],\n                y: [],\n                name: 'Downstairs Temp',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'cyan'}\n        \n            };\n            traces[5] = \n            {\n                x: [],\n                y: [],\n                name: 'Upstairs Temp',\n                yaxis: 'y1',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'purple'}\n        \n            };\n            traces[6] = \n            {\n                x: [],\n                y: [],\n                name: 'Degree-Days',\n                yaxis: 'y2',\n                type: 'scatter',\n                mode: 'lines',\n                line: {color: 'orange'}\n        \n            };\n            for (var ii = 0; ii < archiveList[0].trace.length; ++ii)\n            {\n                var x = (archiveList[0].trace[ii].timeStamp - archiveList[0].device.stopDate) / 3600000.0;\n                for (var itrace = 0; itrace < traces.length; ++ itrace)\n                {\n                    traces[itrace].x[ii] = x;\n                    traces[itrace].y[ii] = archiveList[0].trace[ii][archiveList[0].device.attr[itrace]] ;\n                }\n            }\n\n            Plotly.newPlot('archiveChart', traces, layout);\n            $('#archive2hrButton').attr(\"disabled\", false); \n            $('#archive4hrButton').attr(\"disabled\", false); \n            $('#archive8hrButton').attr(\"disabled\", false); \n            $('#archive24hrButton').attr(\"disabled\", false); \n            $('#archive72hrButton').attr(\"disabled\", false); \n            $('#archive168hrButton').attr(\"disabled\", false); \n        }\n",
-        "output": "str",
-        "x": 650,
-        "y": 1740,
-        "wires": [
-            [
-                "b0f354f4.fe8468"
-            ]
-        ]
-    },
-    {
-        "id": "a35cd64a.de4a58",
-        "type": "template",
-        "z": "9c854ea3.68416",
-        "name": "javascript",
-        "field": "payload.javascript",
-        "fieldType": "msg",
-        "format": "javascript",
-        "syntax": "mustache",
-        "template": "{{{payload.script.stripChartWidget}}}\n{{{payload.script.global}}}\n{{{payload.script.deviceReadings}}}\n{{{payload.script.archive}}}\n{{{payload.script.editDevice}}}\n{{{payload.script.setState}}}\n\n",
-        "output": "str",
-        "x": 640,
-        "y": 1820,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "b0f354f4.fe8468",
-        "type": "template",
-        "z": "9c854ea3.68416",
-        "name": "script.editDevice",
-        "field": "payload.script.editDevice",
-        "fieldType": "msg",
-        "format": "javascript",
-        "syntax": "mustache",
-        "template": "// Edit Temp JavaScript\n       $( function() \n        {\n            $( \"#editDeviceDialog\" ).dialog(\n                {\n//                    closeOnEscape: false,\n//                    open: function(event, ui) {$(\".ui-dialog-titlebar-close\", ui.dialog | ui).hide();},\n                    width:    640,\n                    autoOpen: false,\n                    buttons:\n                    [\n                        {\n                            text: \"Set\",\n                            click: function() {setDevice(); $( this ).dialog( \"close\" );},\n                            showText: false\n                        },\n                        {\n                            text: \"Cancel\",\n                            click: function() \n                            {\n                                $( this ).dialog( \"close\" ); \n                            },\n                            showText: false\n                        }\n                    ]\n                });\n        } );\n        function editDevice(attrName)\n        {\n            $( \"#editDeviceDialog\" ).dialog( \"option\", \"title\", \"Edit\"); \n            editedAttribute = attrName;\n            $( \"#editDeviceDialogAttribute\").html(attrName);\n\n            var attr = device[attrName];\n            $( \"#loloAlarm\").val(attr.alarm.limits.lolo);\n            $( \"#lowAlarm\").val(attr.alarm.limits.low);\n            $( \"#highAlarm\").val(attr.alarm.limits.high);\n            $( \"#hihiAlarm\").val(attr.alarm.limits.hihi);\n            $( \"#notifyName\").val(attr.alarm.notify.name);\n            $( \"#notifyNumber\").val(attr.alarm.notify.number);\n\n            $( \"#editDeviceDialog\" ).dialog( \"open\" );\n        }\n        function setDevice()\n        {\n            var attr = device[editedAttribute];\n            if (isNaN($('#loloAlarm').val()) \n                || isNaN($('#lowAlarm').val()) \n                || isNaN($('#highAlarm').val()) \n                || isNaN($('#hihiAlarm').val()))\n            {\n                acknowledgeDialog('Error', 'Entry not a number!', editedAttribute);\n                editedAttribute = '';\n                return;\n            }\n            editedAttribute = '';\n\n            attr.alarm.limits.lolo = Number($( \"#loloAlarm\").val());\n            attr.alarm.limits.low = Number($( \"#lowAlarm\").val());\n            attr.alarm.limits.high = Number($( \"#highAlarm\").val());\n            attr.alarm.limits.hihi = Number($( \"#hihiAlarm\").val());\n            attr.alarm.notify.number =  $( \"#notifyNumber\").val();\n            attr.alarm.notify.name = $( \"#notifyName\").val();\n            var mqttMessage = \n            {\n                topic   : mqttDevice.project + '/' +  mqttDevice.deviceType + '/' +  mqttDevice.name + '/setting',\n                payload :  device\n            };\n            checkLogin(sendSettingToMqtt, mqttMessage);\n        }\n",
-        "output": "str",
-        "x": 660,
-        "y": 1780,
-        "wires": [
-            [
-                "a35cd64a.de4a58"
             ]
         ]
     },
@@ -8772,7 +8686,7 @@
         "action": "obj",
         "pretty": false,
         "x": 690,
-        "y": 320,
+        "y": 400,
         "wires": [
             [
                 "8a8fe53c.af1518"
@@ -8788,11 +8702,126 @@
         "action": "obj",
         "pretty": false,
         "x": 450,
-        "y": 320,
+        "y": 400,
         "wires": [
             [
                 "c3c87171.cb512"
             ]
         ]
+    },
+    {
+        "id": "40fed104.ae97f",
+        "type": "mqtt out",
+        "z": "65fcd63c.d7aa68",
+        "name": "",
+        "topic": "blinky-lite-v2/solar-regulator/01/reading",
+        "qos": "0",
+        "retain": "false",
+        "broker": "2fdc51cf.f4e8ce",
+        "x": 930,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "d74b2890.9ea5e8",
+        "type": "delay",
+        "z": "65fcd63c.d7aa68",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "5",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 680,
+        "y": 580,
+        "wires": [
+            [
+                "40fed104.ae97f"
+            ]
+        ]
+    },
+    {
+        "id": "3d35ac7e.175ff4",
+        "type": "mqtt in",
+        "z": "65fcd63c.d7aa68",
+        "name": "",
+        "topic": "blinky-lite-v2/solar-regulator/01/setting",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "2fdc51cf.f4e8ce",
+        "x": 230,
+        "y": 340,
+        "wires": [
+            [
+                "2455e53.583cb1a"
+            ]
+        ]
+    },
+    {
+        "id": "d2bf8ef9.6a2ec",
+        "type": "gzip",
+        "z": "65fcd63c.d7aa68",
+        "name": "",
+        "x": 570,
+        "y": 340,
+        "wires": [
+            [
+                "f9d7842c.c1cb28"
+            ]
+        ]
+    },
+    {
+        "id": "f9d7842c.c1cb28",
+        "type": "json",
+        "z": "65fcd63c.d7aa68",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 690,
+        "y": 340,
+        "wires": [
+            [
+                "d0a41129.0ab24"
+            ]
+        ]
+    },
+    {
+        "id": "2455e53.583cb1a",
+        "type": "json",
+        "z": "65fcd63c.d7aa68",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 450,
+        "y": 340,
+        "wires": [
+            [
+                "d2bf8ef9.6a2ec"
+            ]
+        ]
+    },
+    {
+        "id": "d0a41129.0ab24",
+        "type": "debug",
+        "z": "65fcd63c.d7aa68",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 810,
+        "y": 340,
+        "wires": []
     }
 ]
