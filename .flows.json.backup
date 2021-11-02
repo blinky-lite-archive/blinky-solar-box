@@ -1794,7 +1794,7 @@
         "type": "function",
         "z": "65fcd63c.d7aa68",
         "name": "State Machine",
-        "func": "var tempMon01 = flow.get('tempMon01');\nvar tempMon02 = flow.get('tempMon02');\nvar tempMon03 = flow.get('tempMon03');\nvar powerMeter01 = flow.get('powerMeter01');\nvar solarRegulator = flow.get('solarRegulator');\nvar floorPumpRelay01 = flow.get('floorPumpRelay01');\n\n//node.warn(tempMon03);\nif (tempMon01 == undefined) return [null,null,null];\nif (tempMon02 == undefined) return [null,null,null];\nif (tempMon03 == undefined) return [null,null,null];\nif (powerMeter01 == undefined) return [null,null,null];\nif (solarRegulator == undefined) return [null,null,null];\n\nvar relayAttr = powerMeter01.relay;\n\nvar regState = solarRegulator.regState.value;\nvar deltaTAttr = solarRegulator.deltaT;\ndeltaTAttr.value = Math.round(1000.0 * (tempMon02.tempA.value - tempMon01.tempA.value)) / 1000.0;\n\nvar newRelay = 0;\nswitch(regState)\n{\n    case 0 :\n        newRelay = 0;\n        break;\n    case 1 :\n        if (deltaTAttr.value > solarRegulator.regTup.value)\n        {\n            newRelay = 1;\n        }\n        if (deltaTAttr.value < solarRegulator.regTdn.value)\n        {\n            newRelay = 0;\n        }\n        break;\n    case 2 :\n        newRelay = 1;\n        break;\n}\nvar relayState = 0;\nif (powerMeter01.power.value > 5.0) relayState = 1;\nvar relayMsg = null;\n//if (relayState != newRelay)\n//{\n    relayAttr.value = newRelay;\n    relayMsg = {topic:'solar-system/blinky-zero-relay/01/setting', payload:JSON.stringify(powerMeter01)};\n//}\n\nvar flowPumpMsg = null;\nif (floorPumpRelay01 != undefined)\n{\n    if (floorPumpRelay01.powerOn.value > 0)\n    {\n        if (tempMon01.tempB.value < 22.0)\n        {\n            floorPumpRelay01.powerOn.value = 0;\n        }\n    }\n    else\n    {\n        if (tempMon01.tempB.value > 24.0)\n        {\n            floorPumpRelay01.powerOn.value = 1;\n        }\n    }\n    flowPumpMsg = {topic:'solar-system/blinky-power-relay/01/setting', payload:JSON.stringify(floorPumpRelay01)};\n}\n\n\nsolarRegulator.tankBotT.value    = tempMon01.tempA.value;\nsolarRegulator.tankTopT.value    = tempMon01.tempB.value;\nsolarRegulator.panelT.value      = tempMon02.tempA.value;\nsolarRegulator.outsideT.value    = tempMon02.tempB.value;\nsolarRegulator.downstairsT.value = tempMon03.tempA.value;\nsolarRegulator.upstairsT.value   = tempMon03.tempB.value;\nsolarRegulator.pumpStatus.value  = relayState;\nsolarRegulator.pumpPower.value   = powerMeter01.power.value;\n\nreturn [{topic:'solar-system/solar-regulator/01/reading', payload:JSON.stringify(solarRegulator)},relayMsg,flowPumpMsg];",
+        "func": "var tempMon01 = flow.get('tempMon01');\nvar tempMon02 = flow.get('tempMon02');\nvar tempMon03 = flow.get('tempMon03');\nvar powerMeter01 = flow.get('powerMeter01');\nvar solarRegulator = flow.get('solarRegulator');\nvar floorPumpRelay01 = flow.get('floorPumpRelay01');\n\n//node.warn(tempMon03);\nif (tempMon01 == undefined) return [null,null,null];\nif (tempMon02 == undefined) return [null,null,null];\nif (tempMon03 == undefined) return [null,null,null];\nif (powerMeter01 == undefined) return [null,null,null];\nif (solarRegulator == undefined) return [null,null,null];\n\nvar relayAttr = powerMeter01.relay;\n\nvar regState = solarRegulator.regState.value;\nvar deltaTAttr = solarRegulator.deltaT;\ndeltaTAttr.value = Math.round(1000.0 * (tempMon02.tempA.value - tempMon01.tempA.value)) / 1000.0;\n\nvar newRelay = 0;\nswitch(regState)\n{\n    case 0 :\n        newRelay = 0;\n        break;\n    case 1 :\n        if (deltaTAttr.value > solarRegulator.regTup.value)\n        {\n            newRelay = 1;\n        }\n        if (deltaTAttr.value < solarRegulator.regTdn.value)\n        {\n            newRelay = 0;\n        }\n        break;\n    case 2 :\n        newRelay = 1;\n        break;\n}\nvar relayState = 0;\nif (powerMeter01.power.value > 5.0) relayState = 1;\nvar relayMsg = null;\n//if (relayState != newRelay)\n//{\n    relayAttr.value = newRelay;\n    relayMsg = {topic:'solar-system/blinky-zero-relay/01/setting', payload:JSON.stringify(powerMeter01)};\n//}\n\nvar flowPumpMsg = null;\nif (floorPumpRelay01 != undefined)\n{\n    if (floorPumpRelay01.powerOn.value > 0)\n    {\n        if (tempMon01.tempB.value < 24.0)\n        {\n            floorPumpRelay01.powerOn.value = 0;\n        }\n    }\n    else\n    {\n        if (tempMon01.tempB.value > 25.0)\n        {\n            floorPumpRelay01.powerOn.value = 1;\n        }\n    }\n    flowPumpMsg = {topic:'solar-system/blinky-power-relay/01/setting', payload:JSON.stringify(floorPumpRelay01)};\n}\n\n\nsolarRegulator.tankBotT.value    = tempMon01.tempA.value;\nsolarRegulator.tankTopT.value    = tempMon01.tempB.value;\nsolarRegulator.panelT.value      = tempMon02.tempA.value;\nsolarRegulator.outsideT.value    = tempMon02.tempB.value;\nsolarRegulator.downstairsT.value = tempMon03.tempA.value;\nsolarRegulator.upstairsT.value   = tempMon03.tempB.value;\nsolarRegulator.pumpStatus.value  = relayState;\nsolarRegulator.pumpPower.value   = powerMeter01.power.value;\n\nreturn [{topic:'solar-system/solar-regulator/01/reading', payload:JSON.stringify(solarRegulator)},relayMsg,flowPumpMsg];",
         "outputs": 3,
         "noerr": 0,
         "initialize": "",
@@ -2087,7 +2087,9 @@
         "x": 470,
         "y": 900,
         "wires": [
-            []
+            [
+                "7072a01b311353ec"
+            ]
         ]
     },
     {
@@ -2098,7 +2100,9 @@
         "x": 490,
         "y": 820,
         "wires": [
-            []
+            [
+                "7072a01b311353ec"
+            ]
         ]
     },
     {
